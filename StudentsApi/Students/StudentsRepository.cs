@@ -10,6 +10,19 @@ public static class StudentsRepository
     {
         return StudentCsvAdapter.Read(CsvDirectory);
     }
+
+    public static StudentDetails? Get(string indexNumber)
+    {
+        try
+        {
+            return StudentCsvAdapter.Read(CsvDirectory).First(x => x.IndexNumber.Equals(indexNumber));
+        }
+        catch (InvalidOperationException e)
+        {
+            Console.WriteLine(e);
+            return null;
+        }
+    }
 }
 
 public static class StudentCsvAdapter

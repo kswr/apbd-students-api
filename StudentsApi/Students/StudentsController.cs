@@ -14,4 +14,11 @@ public class StudentsController : ControllerBase
         return Ok(students);
     }
     
+    [HttpGet("{indexNumber}")]
+    public IActionResult GetStudent(string indexNumber)
+    {
+        var student = StudentsRepository.Get(indexNumber);
+        return student is null ? NotFound() : Ok(student);
+    }
+    
 }
