@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace StudentsApi.Controllers;
+namespace StudentsApi.Students;
 
 [Route("api/students")]
 [ApiController]
@@ -10,12 +10,8 @@ public class StudentsController : ControllerBase
     [HttpGet]
     public IActionResult GetStudent()
     {
-        var list = new List<StudentDetails>();
-        return Ok(list);
+        var students = StudentsRepository.GetAll();
+        return Ok(students);
     }
     
-}
-
-public class StudentDetails
-{
 }
