@@ -1,21 +1,21 @@
-﻿using StudentsApi.Students.Model;
+﻿using System.Text;
+using StudentsApi.Students.Model;
 
 namespace StudentsApi.Students;
 
 public static class StudentsRepository
 {
-    private static readonly string CsvDirectory = $"{Directory.GetCurrentDirectory()}/students.csv";
 
     public static HashSet<StudentDetails> GetAll()
     {
-        return StudentCsvAdapter.Read(CsvDirectory);
+        return StudentCsvAdapter.Read();
     }
 
     public static StudentDetails? Get(string indexNumber)
     {
         try
         {
-            return StudentCsvAdapter.Read(CsvDirectory).First(x => x.IndexNumber.Equals(indexNumber));
+            return StudentCsvAdapter.Read().First(x => x.IndexNumber.Equals(indexNumber));
         }
         catch (InvalidOperationException e)
         {
@@ -23,14 +23,59 @@ public static class StudentsRepository
             return null;
         }
     }
+
+    public static StudentDetails? Update(StudentDetails student)
+    {
+        try
+        {
+            AssertDetails(student);
+            var existingStudent = StudentCsvAdapter.Read()
+                .First(x => x.IndexNumber.Equals(student.IndexNumber));
+            if (existingStudent is null) return null;
+            var students = StudentCsvAdapter.Read();
+            students.Remove(existingStudent);
+            students.Add(student);
+            StudentCsvAdapter.Write(students);
+            return student;
+        }
+        catch (DetailsAssertionException)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return null;
+        }
+    }
+
+    private static void AssertDetails(StudentDetails student)
+    {
+        var details = new List<string>
+        {
+            student.IndexNumber, student.FName, student.LName, student.Email, student.MothersName, student.FathersName,
+            student.Studies, student.Mode
+        };
+        if (details.Any(string.IsNullOrEmpty))
+        {
+            throw new DetailsAssertionException();
+        }
+
+        if (!student.IndexNumber.StartsWith("s")) throw new DetailsAssertionException();
+    }
+}
+
+internal class DetailsAssertionException : Exception
+{
 }
 
 public static class StudentCsvAdapter
 {
-    public static HashSet<StudentDetails> Read(string sourceFile)
+    private static readonly string CsvDirectory = $"{Directory.GetCurrentDirectory()}/students.csv";
+    public static HashSet<StudentDetails> Read()
     {
         var studentDetails = new HashSet<StudentDetails>();
-        var lines = File.ReadAllLines(sourceFile);
+        var lines = File.ReadAllLines(CsvDirectory);
         foreach (var line in lines)
         {
             try
@@ -62,5 +107,26 @@ public static class StudentCsvAdapter
             FathersName = fields[7],
             MothersName = fields[8],
         };
+    }
+
+    public static void Write(IEnumerable<StudentDetails> students)
+    {
+        var lines = students.Select(ToCsv).ToList();
+        File.WriteAllLines(CsvDirectory, lines);
+    }
+
+    private static string ToCsv(StudentDetails student)
+    {
+
+        return new StringBuilder().AppendJoin(",", 
+            student.FName, 
+            student.LName, 
+            student.IndexNumber,
+            student.Birthdate.ToString(),
+            student.Studies,
+            student.Mode,
+            student.Email,
+            student.FathersName,
+            student.MothersName).ToString();
     }
 }

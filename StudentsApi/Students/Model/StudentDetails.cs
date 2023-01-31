@@ -14,4 +14,17 @@ public class StudentDetails
     public string FathersName { get; init; }
     public string Studies { get; init; }
     public string Mode { get; init; }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        var other = (StudentDetails) obj;
+        return IndexNumber.Equals(other.IndexNumber);
+    }
+
+    public override int GetHashCode()
+    {
+        return IndexNumber.GetHashCode() * 17;
+    }
 }

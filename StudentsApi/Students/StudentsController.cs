@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StudentsApi.Students.Model;
 
 namespace StudentsApi.Students;
 
@@ -19,6 +20,13 @@ public class StudentsController : ControllerBase
     {
         var student = StudentsRepository.Get(indexNumber);
         return student is null ? NotFound() : Ok(student);
+    }
+
+    [HttpPut]
+    public IActionResult UpdateStudent(StudentDetails student)
+    {
+        var updatedStudent = StudentsRepository.Update(student);
+        return updatedStudent is null ? NotFound() : Ok(updatedStudent);
     }
     
 }
