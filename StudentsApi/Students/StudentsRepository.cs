@@ -5,7 +5,6 @@ namespace StudentsApi.Students;
 
 public static class StudentsRepository
 {
-
     public static HashSet<StudentDetails> GetAll()
     {
         return StudentCsvAdapter.Read();
@@ -49,6 +48,27 @@ public static class StudentsRepository
         }
     }
 
+    public static StudentDetails? Add(StudentDetails student)
+    {
+        try
+        {
+            AssertDetails(student);
+            var students = StudentCsvAdapter.Read();
+            if (!students.Add(student)) return null;
+            StudentCsvAdapter.Write(students);
+            return student;
+        }
+        catch (DetailsAssertionException)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
     private static void AssertDetails(StudentDetails student)
     {
         var details = new List<string>
@@ -72,6 +92,7 @@ internal class DetailsAssertionException : Exception
 public static class StudentCsvAdapter
 {
     private static readonly string CsvDirectory = $"{Directory.GetCurrentDirectory()}/students.csv";
+
     public static HashSet<StudentDetails> Read()
     {
         var studentDetails = new HashSet<StudentDetails>();
@@ -117,10 +138,9 @@ public static class StudentCsvAdapter
 
     private static string ToCsv(StudentDetails student)
     {
-
-        return new StringBuilder().AppendJoin(",", 
-            student.FName, 
-            student.LName, 
+        return new StringBuilder().AppendJoin(",",
+            student.FName,
+            student.LName,
             student.IndexNumber,
             student.Birthdate.ToString(),
             student.Studies,
